@@ -4,39 +4,37 @@ import pandas as pd
 
 
 app = FastAPI()
-
-df_gfec = None  # Inicializar el DataFrame como None
+df_gfec=pd.read_parquet("Generos_fecha.parquet")
 
 df_ustiempo=pd.read_parquet('Usuarios_tiempo.parquet')
 
 df_ur=pd.read_parquet('func_3.parquet') 
 
 # Endpoint para obtener el año con más horas jugadas para un género específico
-
-
-# Endpoint para obtener el año con más horas jugadas para un género específico
 @app.get('/PlayTimeGenre/{genero}')
-def PlayTimeGenre(genero):
-    global df_gfec  # Acceder al DataFrame global
-
+def PlayTimeGenre( genero ): 
+    #Debe devolver año con mas horas jugadas para dicho género.
+    #Ejemplo de retorno: {"Año de lanzamiento con más horas jugadas para Género X" : 2013}
     if not isinstance(genero, str):
-        return {"error": "Género ingresado incorrectamente"}
-
-    if df_gfec is None:
-        df_gfec = pd.read_parquet("Generos_fecha.parquet")
-
-    generos = df_gfec[df_gfec["genres"] == genero]
-
+        print("Genero ingresado incorrectamente")
+        return
+    
+    generos=df_gfec[df_gfec["genres"]==genero ]
     if generos.empty:
-        return {"error": "Ese género no existe"}
-
-    # Agrupar por "anio" y sumar la columna "playtime_forever"
+        print('Ese genero no existe')
+        return
+    # Agrupar por "release_date" y sumar la columna "time_forever"
     resultados_agrupados = generos.groupby('anio')['playtime_forever'].sum()
-
-    # Encontrar el año con el valor máximo
+    # Agrupar por "release_date" y sumar la columna "time_forever"
+    
+    # Encontrar la fecha con el valor máximo
     max_release_date = resultados_agrupados.idxmax()
+    # Mostrar el resultado
+    print(f"Año de lanzamiento con más horas jugadas para {genero}: {max_release_date}")
 
-    return {"Año de lanzamiento con más horas jugadas para " + genero: max_release_date}
+   
+    return# Endpoint para obtener el usuario con más horas jugadas y acumulación de horas por año para un género
+
 
 @app.get('/UserForGenre/{genero}')
 def UserForGenre( genero : str ): 
@@ -44,15 +42,13 @@ def UserForGenre( genero : str ):
     # de horas jugadas por año.
     #Ejemplo de retorno: {"Usuario con más horas jugadas para Género X" : us213ndjss09sdf,
     # "Horas jugadas":[{Año: 2013, Horas: 203}, {Año: 2012, Horas: 100}, {Año: 2011, Horas: 23}]}
-    global df_gfec  # Acceder al DataFrame global
-
     if not isinstance(genero, str):
-        return {"error": "Género ingresado incorrectamente"}
-
-    if df_gfec is None:
-        df_gfec = pd.read_parquet("Generos_fecha.parquet")
-        
+        print("Genero ingresado incorrectamente")
+        return
     generos=df_ustiempo[df_ustiempo["genres"]==genero]
+    if generos.empty:
+        print('Ese genero no existe')
+        return
     # Agrupar por "user_id" y sumar la columna "time_forever"
     resultados_agrupados = generos.groupby('user_id')['playtime_forever'].sum()
     # buscar el maximo
@@ -74,6 +70,7 @@ def UserForGenre( genero : str ):
     
         print(f'Año {anio} : Horas : {horas}')
 
+    print("Año 0 corresponde al año no informado")
     return
 
 # Endpoint para obtener los 3 juegos más recomendados por usuarios para un año dado
@@ -100,11 +97,17 @@ def UsersRecommend( año : int ):
 
     # Tomar los 3 juegos más recomendados
     top_3_games = game_recommendations.head(3)
+    #merged_df = pd.merge(top_3_games, df_ur, left_on='item_id', right_on='item_id', how='inner')
+    # Tomar los 3 juegos más recomendados
+    top_3_games = game_recommendations.head(3)
+
     # Crear el formato de salida
     top_3_games = [{"Puesto " + str(i + 1): game} for i, game in enumerate(top_3_games['item_name'])]
 
-    print(top_3_games)
-    
+    if top_3_games:
+        print(top_3_games)
+    else:
+        print("No hay datos para esa fecha")
     return
 
 # Endpoint para obtener los 3 juegos menos recomendados por usuarios para un año dado
@@ -128,12 +131,16 @@ def UsersNotRecommend( año : int ):
 
     # Tomar los 3 juegos más recomendados
     top_3_games = game_recommendations.head(3)
+    #merged_df = pd.merge(top_3_games, df_ur, left_on='item_id', right_on='item_id', how='inner')
+    # Tomar los 3 juegos más recomendados
+    top_3_games = game_recommendations.head(3)
 
     # Crear el formato de salida
     top_3_games = [{"Puesto " + str(i + 1): game} for i, game in enumerate(top_3_games['item_name'])]
-    
-    print(top_3_games)
-    
+    if top_3_games:
+        print(top_3_games)
+    else:
+        print("No hay datos para esa fecha")
     return
 
 # Endpoint para obtener la cantidad de registros de reseñas categorizadas con análisis de sentimiento por año
@@ -153,4 +160,6 @@ def sentiment_analysis( año : int ):
         sent_por_anio = sent_por_anio.loc[año].to_dict()
           
         print(f"Negativo : {sent_por_anio[0]} , Neutral : {sent_por_anio[1]} Positivo: {sent_por_anio[2]}")
+    else:
+        print(f"No se encontraron datos para el año {año}.")
     return
