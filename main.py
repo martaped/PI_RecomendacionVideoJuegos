@@ -4,32 +4,39 @@ import pandas as pd
 
 
 app = FastAPI()
-df_gfec=pd.read_parquet("Generos_fecha.parquet")
+
+df_gfec = None  # Inicializar el DataFrame como None
 
 df_ustiempo=pd.read_parquet('Usuarios_tiempo.parquet')
 
 df_ur=pd.read_parquet('func_3.parquet') 
 
 # Endpoint para obtener el año con más horas jugadas para un género específico
+
+
+# Endpoint para obtener el año con más horas jugadas para un género específico
 @app.get('/PlayTimeGenre/{genero}')
-def PlayTimeGenre( genero ): 
-    #Debe devolver año con mas horas jugadas para dicho género.
-    #Ejemplo de retorno: {"Año de lanzamiento con más horas jugadas para Género X" : 2013}
-    
-    generos=df_gfec[df_gfec["genres"]==genero ]
-    
-    # Agrupar por "release_date" y sumar la columna "time_forever"
+def PlayTimeGenre(genero):
+    global df_gfec  # Acceder al DataFrame global
+
+    if not isinstance(genero, str):
+        return {"error": "Género ingresado incorrectamente"}
+
+    if df_gfec is None:
+        df_gfec = pd.read_parquet("Generos_fecha.parquet")
+
+    generos = df_gfec[df_gfec["genres"] == genero]
+
+    if generos.empty:
+        return {"error": "Ese género no existe"}
+
+    # Agrupar por "anio" y sumar la columna "playtime_forever"
     resultados_agrupados = generos.groupby('anio')['playtime_forever'].sum()
-    # Agrupar por "release_date" y sumar la columna "time_forever"
-    
-    # Encontrar la fecha con el valor máximo
+
+    # Encontrar el año con el valor máximo
     max_release_date = resultados_agrupados.idxmax()
-    # Mostrar el resultado
-    print(f"Año de lanzamiento con más horas jugadas para {genero}: {max_release_date}")
 
-   
-    return# Endpoint para obtener el usuario con más horas jugadas y acumulación de horas por año para un género
-
+    return {"Año de lanzamiento con más horas jugadas para " + genero: max_release_date}
 
 @app.get('/UserForGenre/{genero}')
 def UserForGenre( genero : str ): 
@@ -37,7 +44,14 @@ def UserForGenre( genero : str ):
     # de horas jugadas por año.
     #Ejemplo de retorno: {"Usuario con más horas jugadas para Género X" : us213ndjss09sdf,
     # "Horas jugadas":[{Año: 2013, Horas: 203}, {Año: 2012, Horas: 100}, {Año: 2011, Horas: 23}]}
-    
+    global df_gfec  # Acceder al DataFrame global
+
+    if not isinstance(genero, str):
+        return {"error": "Género ingresado incorrectamente"}
+
+    if df_gfec is None:
+        df_gfec = pd.read_parquet("Generos_fecha.parquet")
+        
     generos=df_ustiempo[df_ustiempo["genres"]==genero]
     # Agrupar por "user_id" y sumar la columna "time_forever"
     resultados_agrupados = generos.groupby('user_id')['playtime_forever'].sum()
