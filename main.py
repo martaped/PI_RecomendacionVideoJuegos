@@ -11,18 +11,18 @@ df_ustiempo=pd.read_parquet('Usuarios_tiempo.parquet')
 df_ur=pd.read_parquet('func_3.parquet') 
 
 # Endpoint para obtener el año con más horas jugadas para un género específico
-@app.get('/PlayTimeGenre/{genero}')
-def PlayTimeGenre( genero ): 
+@app.get('PlayTimeGenre/{genero}')
+def PlayTimeGenre( genero : str ): 
     #Debe devolver año con mas horas jugadas para dicho género.
     #Ejemplo de retorno: {"Año de lanzamiento con más horas jugadas para Género X" : 2013}
     if not isinstance(genero, str):
-        print("Genero ingresado incorrectamente")
-        return
+        return {"Genero ingresado incorrectamente"}
+        
     
     generos=df_gfec[df_gfec["genres"]==genero ]
     if generos.empty:
-        print('Ese genero no existe')
-        return
+        return {'Ese genero no existe'}
+        
     # Agrupar por "release_date" y sumar la columna "time_forever"
     resultados_agrupados = generos.groupby('anio')['playtime_forever'].sum()
     # Agrupar por "release_date" y sumar la columna "time_forever"
@@ -36,19 +36,19 @@ def PlayTimeGenre( genero ):
     return# Endpoint para obtener el usuario con más horas jugadas y acumulación de horas por año para un género
 
 
-@app.get('/UserForGenre/{genero}')
+@app.get('UserForGenre/{genero}')
 def UserForGenre( genero : str ): 
     #Debe devolver el usuario que acumula más horas jugadas para el género dado y una lista de la acumulación
     # de horas jugadas por año.
     #Ejemplo de retorno: {"Usuario con más horas jugadas para Género X" : us213ndjss09sdf,
     # "Horas jugadas":[{Año: 2013, Horas: 203}, {Año: 2012, Horas: 100}, {Año: 2011, Horas: 23}]}
     if not isinstance(genero, str):
-        print("Genero ingresado incorrectamente")
-        return
+        return {"Genero ingresado incorrectamente"}
+        
     generos=df_ustiempo[df_ustiempo["genres"]==genero]
     if generos.empty:
-        print('Ese genero no existe')
-        return
+        return {'Ese genero no existe'}
+        
     # Agrupar por "user_id" y sumar la columna "time_forever"
     resultados_agrupados = generos.groupby('user_id')['playtime_forever'].sum()
     # buscar el maximo
@@ -71,10 +71,10 @@ def UserForGenre( genero : str ):
         print(f'Año {anio} : Horas : {horas}')
 
     print("Año 0 corresponde al año no informado")
-    return
+    return 
 
 # Endpoint para obtener los 3 juegos más recomendados por usuarios para un año dado
-@app.get('/UsersRecommend/{año}')
+@app.get('UsersRecommend/{año}')
 def UsersRecommend( año : int ): 
     #Devuelve el top 3 de juegos MÁS recomendados por usuarios para el año dado. 
     # (reviews.recommend = True y comentarios positivos/neutrales)
@@ -98,8 +98,7 @@ def UsersRecommend( año : int ):
     # Tomar los 3 juegos más recomendados
     top_3_games = game_recommendations.head(3)
     #merged_df = pd.merge(top_3_games, df_ur, left_on='item_id', right_on='item_id', how='inner')
-    # Tomar los 3 juegos más recomendados
-    top_3_games = game_recommendations.head(3)
+    
 
     # Crear el formato de salida
     top_3_games = [{"Puesto " + str(i + 1): game} for i, game in enumerate(top_3_games['item_name'])]
@@ -111,7 +110,7 @@ def UsersRecommend( año : int ):
     return
 
 # Endpoint para obtener los 3 juegos menos recomendados por usuarios para un año dado
-@app.get('/UsersNotRecommend/{año}')
+@app.get('UsersNotRecommend/{año}')
 def UsersNotRecommend( año : int ):
     #Devuelve el top 3 de juegos MENOS recomendados por usuarios para el año dado.
     # (reviews.recommend = False y comentarios negativos)
@@ -140,11 +139,11 @@ def UsersNotRecommend( año : int ):
     if top_3_games:
         print(top_3_games)
     else:
-        print("No hay datos para esa fecha")
+        return {"No hay datos para esa fecha"}
     return
 
 # Endpoint para obtener la cantidad de registros de reseñas categorizadas con análisis de sentimiento por año
-@app.get('/sentiment_analysis/{año}')
+@app.get('sentiment_analysis/{año}')
 
 def sentiment_analysis( año : int ):
     #Según el año de lanzamiento, se devuelve una lista con la cantidad de registros de reseñas de usuarios
