@@ -31,7 +31,7 @@ def PlayTimeGenre( genero : str ):
     return {respuesta}
 
    
-@app.get('/UserForGenre/{genero}/')
+
 def UserForGenre(genero: str):
     #Debe devolver el usuario que acumula más horas jugadas para el género dado y una lista de la acumulación
     # de horas jugadas por año.
@@ -67,12 +67,15 @@ def UserForGenre(genero: str):
     }
 
     return JSONResponse(content=respuesta)
+@app.get('/UserForGenre/{genero}/')
+async def get_usersForgenre(genero: str):
+    return UserForGenre(genero)
 
 def UsersRecommend(anio: int):
     positivos = df_ur[(df_ur['anio'] == anio) & (df_ur['recommend'] == True) & (df_ur['sentiment_analysis'] >= 0)]
 
     if positivos.empty:
-        return {"No hay datos para ese año"}
+        return {"No hay Recomendados para ese año"}
 
     recomendaciones = positivos['item_id'].value_counts().reset_index()
     recomendaciones.columns = ['item_id', 'count']
@@ -93,11 +96,12 @@ async def get_users_recommend(anio: int):
 
 
 
-def UsersNotRecommend( año : int ):
+def UsersNotRecommend( anio : int ):
     #Devuelve el top 3 de juegos MENOS recomendados por usuarios para el año dado.
     # (reviews.recommend = False y comentarios negativos)
-    positivos = df_ur[(df_ur['anio'] == año) & (df_ur['recommend'] == False) & (df_ur['sentiment_analysis'] == 0)]
-
+    positivos = df_ur[(df_ur['anio'] == anio) & (df_ur['recommend'] == False) & (df_ur['sentiment_analysis'] == 0)]
+    if positivos.empty:
+        return {"No hay No recomendados para ese año"}
     # Contar cuántas revisiones tiene cada juego
     recomendaciones = positivos['item_id'].value_counts().reset_index()
     recomendaciones.columns = ['item_id', 'count']
