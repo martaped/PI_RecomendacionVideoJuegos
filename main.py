@@ -71,7 +71,7 @@ def UserForGenre(genero: str):
         "Horas jugadas": lista_acumulacion
     }
 
-    return respuesta
+    return JSONResponse(content=respuesta)
 
 def UsersRecommend(anio: int):
     positivos = df_ur[(df_ur['anio'] == anio) & (df_ur['recommend'] == True) & (df_ur['sentiment_analysis'] >= 0)]
