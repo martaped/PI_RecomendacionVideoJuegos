@@ -44,7 +44,7 @@ def UserForGenre(genero: str):
    
     # Comprobar si el género existe en el DataFrame
     if generos.empty:
-        return {'Error': 'Ese género no existe'}
+        return {'No hay horas jugadas para ese género '}
 
     # Agrupar por "user_id" y sumar la columna "playtime_forever"
     resultados_agrupados = generos.groupby('user_id')['playtime_forever'].sum()
@@ -90,7 +90,7 @@ def UsersRecommend(anio: int):
 
     return JSONResponse(content=respuesta)
 
-@app.get("/users_recommend/{anio}")
+@app.get("/UsersRecommend/{anio}")
 async def get_users_recommend(anio: int):
     return UsersRecommend(anio)
 
