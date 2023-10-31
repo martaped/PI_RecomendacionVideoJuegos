@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi import Depends  # Importa Depends desde fastapi
+from typing import Tuple  # Importa Tuple para definir el tipo de dato que se inyectará
 
 import pandas as pd
-
 
 app = FastAPI()
 # Cargar los datos en cada solicitud en lugar de utilizar variables globales
@@ -11,9 +12,14 @@ df_gfec = pd.read_parquet("Generos_fecha.parquet")
 df_ustiempo = pd.read_parquet("Usuarios_tiempo.parquet")
 df_ur = pd.read_parquet("func_3.parquet")
 
+def get_data():
+    return df_gfec, df_ustiempo, df_ur
+
 # Endpoint para obtener el año con más horas jugadas para un género específico
 @app.get('/PlayTimeGenre/{genero}/')
-def PlayTimeGenre( genero : str ): 
+def PlayTimeGenre( genero : str, data: Tuple = Depends(get_data)):
+    df_gfec, df_ustiempo, df_ur = data
+    
     #Debe devolver año con mas horas jugadas para dicho género.
     #Ejemplo de retorno: {"Año de lanzamiento con más horas jugadas para Género X" : 2013}
     if not isinstance(genero, str):
@@ -32,10 +38,9 @@ def PlayTimeGenre( genero : str ):
     # Mostrar el resultado
     respuesta =f"Año de lanzamiento con más horas jugadas para {genero}: {max_release_date}"
     return {respuesta}
-
-   
 @app.get('/UserForGenre/{genero}/')
-def UserForGenre(genero: str):
+def UserForGenre(genero: str, data: Tuple = Depends(get_data)):
+    df_gfec, df_ustiempo, df_ur = data
     #Debe devolver el usuario que acumula más horas jugadas para el género dado y una lista de la acumulación
     # de horas jugadas por año.
     #Ejemplo de retorno: {"Usuario con más horas jugadas para Género X" : us213ndjss09sdf,
@@ -101,10 +106,11 @@ async def get_users_recommend(anio: int):
 def UsersNotRecommend( año : int ):
     #Devuelve el top 3 de juegos MENOS recomendados por usuarios para el año dado.
     # (reviews.recommend = False y comentarios negativos)
-    positivos = df_ur[(df_ur['anio'] == año) & (df_ur['recommend'] == False) & (df_ur['sentiment_analysis'] == 0)]
-
+    negativos = df_ur[(df_ur['anio'] == año) & (df_ur['recommend'] == False) & (df_ur['sentiment_analysis'] == 0)]
+    if negativos.empty:
+        return {"message": f"No se encontraron datos para el año {año}."}
     # Contar cuántas revisiones tiene cada juego
-    recomendaciones = positivos['item_id'].value_counts().reset_index()
+    recomendaciones = negativos['item_id'].value_counts().reset_index()
     recomendaciones.columns = ['item_id', 'count']
 
     # Fusionar 'recomendaciones' con 'df_ur' para obtener los nombres
