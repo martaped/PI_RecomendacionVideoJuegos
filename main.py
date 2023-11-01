@@ -59,7 +59,7 @@ def UserForGenre(genero: str):
     acumulacion_horas_anio = df_max.groupby(df_max['anio'])['playtime_forever'].sum()
 
     # Crear una lista de diccionarios con el año y las horas jugadas
-    lista_acumulacion = [{"Año": anio, "Horas": horas} for anio, horas in acumulacion_horas_anio.items()]
+    lista_acumulacion = [{"Año": anio, "Horas": int(horas/60)} for anio, horas in acumulacion_horas_anio.items()]
 
     respuesta = {
         "Usuario con más horas jugadas para {}".format(genero): max_por_id,
