@@ -9,7 +9,7 @@ import pandas as pd
 app = FastAPI()
 
 
-df_gfec = pd.read_parquet("/data/Generos_fecha.parquet")
+df_gfec = pd.read_parquet("Generos_fecha.parquet")
 df_ustiempo = pd.read_parquet("/data/Usuarios_tiempo.parquet")
 df_ur = pd.read_parquet("/data/func_3.parquet")
 
