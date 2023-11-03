@@ -7,12 +7,13 @@ import pandas as pd
 
 
 app = FastAPI()
-# Cargar los datos en cada solicitud en lugar de utilizar variables globales
+
 
 df_gfec = pd.read_parquet("Generos_fecha.parquet")
 df_ustiempo = pd.read_parquet("Usuarios_tiempo.parquet")
 df_ur = pd.read_parquet("func_3.parquet")
 
+#utilizo estas globales para tratar de ahorrar memoria y cargar el parquet y la matriz cuando se usen
 global df_games
 global similarity_matrix
 df_games = None
@@ -75,6 +76,7 @@ def UserForGenre(genero: str):
     }
 
     return JSONResponse(content=respuesta)
+
 @app.get('/UserForGenre/{genero}/')
 async def get_usersForgenre(genero: str):
     return UserForGenre(genero)
