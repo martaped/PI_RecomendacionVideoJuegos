@@ -6,7 +6,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 
 
-
 app = FastAPI()
 # Cargar los datos en cada solicitud en lugar de utilizar variables globales
 
