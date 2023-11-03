@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 app = FastAPI()
 # Cargar los datos en cada solicitud en lugar de utilizar variables globales
@@ -9,6 +13,20 @@ app = FastAPI()
 df_gfec = pd.read_parquet("Generos_fecha.parquet")
 df_ustiempo = pd.read_parquet("Usuarios_tiempo.parquet")
 df_ur = pd.read_parquet("func_3.parquet")
+df_games=pd.read_parquet("Game_recom.parquet")
+
+# Combina las cuatro columnas en una columna de texto
+df_games['combined_text'] = df_games['tag_1'] + ' ' + df_games['tag_2'] + ' ' + df_games['tag_3'] 
+
+# Crea una instancia del vectorizador TF-IDF
+tfidf_vectorizer = TfidfVectorizer()
+
+    # Aplica el vectorizador a la columna de texto combinada
+tfidf_matrix = tfidf_vectorizer.fit_transform(df_games['combined_text'])
+
+    # Calcula la similitud del coseno en función de las características TF-IDF
+similarity_matrix = cosine_similarity(tfidf_matrix)
+
 
 # Endpoint para obtener el año con más horas jugadas para un género específico
 @app.get('/PlayTimeGenre/{genero}/')
@@ -145,3 +163,37 @@ def sentiment_analysis(anio: int):
         respuesta = {"message": f"No se encontraron datos para el año {anio}."}
     return respuesta
 
+def recomendacion_juego( game_name : str ): 
+      
+    
+    # Verificar si el juego esta
+    juego = df_games[df_games['id'] == game_name]
+    if juego.empty:
+        return {"Juego ingresado NO valido"}    
+    # Encuentra el índice del juego en el DataFrame
+    game_index = df_games[df_games['id'] == game_name].index[0]
+    # Obtén las puntuaciones de similitud para ese juego
+    similar_scores = list(enumerate(similarity_matrix[game_index]))
+    
+    # Ordena las puntuaciones en orden descendente
+    similar_scores = sorted(similar_scores, key=lambda x: x[1], reverse=True)
+    # Recupera los índices de los juegos similares
+    similar_game_indices = [i[0] for i in similar_scores]
+    
+    # Devuelve los nombres de los juegos recomendados (los 5 primeros)
+    recommended_games = df_games['app_name'].iloc[similar_game_indices[1:6]]
+
+    # Convierte los nombres de los juegos a una lista
+    recommendations_list = recommended_games.tolist()
+
+    # Devuelve la lista de recomendaciones en formato JSON usando JSONResponse
+    return JSONResponse(content={"Se recomienda ": recommendations_list})
+
+    
+# Define la ruta de la API para obtener recomendaciones
+@app.get('/recommendacion/{game_id}')
+async def get_recomendacion_juego(game_id: str):
+    return recomendacion_juego(game_id)
+   
+
+    
