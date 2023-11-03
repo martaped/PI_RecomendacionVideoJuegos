@@ -12,20 +12,11 @@ app = FastAPI()
 df_gfec = pd.read_parquet("Generos_fecha.parquet")
 df_ustiempo = pd.read_parquet("Usuarios_tiempo.parquet")
 df_ur = pd.read_parquet("func_3.parquet")
-df_games=pd.read_parquet("Game_recom.parquet")
 
-# Combina las cuatro columnas en una columna de texto
-df_games['combined_text'] = df_games['tag_1'] + ' ' + df_games['tag_2'] + ' ' + df_games['tag_3'] 
-
-# Crea una instancia del vectorizador TF-IDF
-tfidf_vectorizer = TfidfVectorizer()
-
-    # Aplica el vectorizador a la columna de texto combinada
-tfidf_matrix = tfidf_vectorizer.fit_transform(df_games['combined_text'])
-
-    # Calcula la similitud del coseno en función de las características TF-IDF
-similarity_matrix = cosine_similarity(tfidf_matrix)
-
+global df_games
+global similarity_matrix
+df_games = None
+similarity_matrix = None
 
 # Endpoint para obtener el año con más horas jugadas para un género específico
 @app.get('/PlayTimeGenre/{genero}/')
@@ -162,7 +153,7 @@ def sentiment_analysis(anio: int):
         respuesta = {"message": f"No se encontraron datos para el año {anio}."}
     return respuesta
 
-def recomendacion_juego( game_name : str ): 
+def recomendacion_juego( game_name : str,similarity_matrix ): 
       
     
     # Verificar si el juego esta
@@ -192,7 +183,25 @@ def recomendacion_juego( game_name : str ):
 # Define la ruta de la API para obtener recomendaciones
 @app.get('/recommendacion/{game_id}')
 async def get_recomendacion_juego(game_id: str):
-    return recomendacion_juego(game_id)
+    global df_games, similarity_matrix
+
+    if df_games is None or similarity_matrix is None:
+        df_games=pd.read_parquet("Game_recom.parquet")
+
+        # Combina las cuatro columnas en una columna de texto
+        df_games['combined_text'] = df_games['tag_1'] + ' ' + df_games['tag_2'] + ' ' + df_games['tag_3'] 
+
+        # Crea una instancia del vectorizador TF-IDF
+        tfidf_vectorizer = TfidfVectorizer()
+
+        # Aplica el vectorizador a la columna de texto combinada
+        tfidf_matrix = tfidf_vectorizer.fit_transform(df_games['combined_text'])
+
+        # Calcula la similitud del coseno en función de las características TF-IDF
+        similarity_matrix = cosine_similarity(tfidf_matrix)
+
+
+    return recomendacion_juego(game_id,similarity_matrix)
    
 
     
