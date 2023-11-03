@@ -9,9 +9,9 @@ import pandas as pd
 app = FastAPI()
 
 
-df_gfec = pd.read_parquet("Generos_fecha.parquet")
-df_ustiempo = pd.read_parquet("Usuarios_tiempo.parquet")
-df_ur = pd.read_parquet("func_3.parquet")
+df_gfec = pd.read_parquet("/data/Generos_fecha.parquet")
+df_ustiempo = pd.read_parquet("/data/Usuarios_tiempo.parquet")
+df_ur = pd.read_parquet("/data/func_3.parquet")
 
 #utilizo estas globales para tratar de ahorrar memoria y cargar el parquet y la matriz cuando se usen
 global df_games
@@ -188,7 +188,7 @@ async def get_recomendacion_juego(game_id: str):
     global df_games, similarity_matrix
 
     if df_games is None or similarity_matrix is None:
-        df_games=pd.read_parquet("Game_recom.parquet")
+        df_games=pd.read_parquet("/data/Game_recom.parquet")
 
         # Combina las cuatro columnas en una columna de texto
         df_games['combined_text'] = df_games['tag_1'] + ' ' + df_games['tag_2'] + ' ' + df_games['tag_3'] 
