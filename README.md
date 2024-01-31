@@ -1,6 +1,7 @@
 # P_I_Recomendacion-VideoJuegos#
 
-
+<div class="badge-base LI-profile-badge" data-locale="es_ES" data-size="medium" data-theme="dark" data-type="VERTICAL" data-vanity="marta-pedriel" data-version="v1"><a class="badge-base__link LI-simple-link" href="https://ar.linkedin.com/in/marta-pedriel?trk=profile-badge">Marta Pedriel</a></div>
+              
 Sistema de Recomendación de Videojuegos
 Este es un sistema de recomendación de videojuegos que se ha implementado como una API desplegada en Render. El sistema proporciona recomendaciones de videojuegos basadas en Datos proveidos por SoyHenry.
 Los archivos parquet se encuentran en este repositorio.
