@@ -1,4 +1,4 @@
-# P_I_Recomendacion-VideoJuegos# 
+# P_I_Recomendacion-VideoJuegos# Linkeadin <script src="https://platform.linkedin.com/badges/js/profile.js" async defer type="text/javascript"></script>
 
 Sistema de Recomendación de Videojuegos
 Este es un sistema de recomendación de videojuegos que se ha implementado como una API desplegada en Render. El sistema proporciona recomendaciones de videojuegos basadas en Datos proveidos por SoyHenry.
